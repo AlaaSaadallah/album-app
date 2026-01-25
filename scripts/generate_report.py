@@ -9,7 +9,7 @@ from reportlab.lib.pagesizes import LETTER
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.graphics.shapes import Drawing
@@ -163,11 +163,11 @@ for issue in filtered_issues:
         contributor_stats[assignee_login]['other'] += 1
 
 # -----------------------
-# Create graphs
+# Create graph functions (return Drawing objects for PDF)
 # -----------------------
 
-def create_pie_chart(data, labels, title, filename):
-    """Create a pie chart and save as image"""
+def create_pie_chart_drawing(data, labels, title):
+    """Create a pie chart drawing object"""
     drawing = Drawing(400, 200)
     pie = Pie()
     pie.x = 150
@@ -186,50 +186,17 @@ def create_pie_chart(data, labels, title, filename):
         pie.slices[i].fillColor = color
     
     drawing.add(pie)
-    drawing.save(formats=['png'], outDir='.', fnRoot=filename)
-    return f"{filename}.png"
+    return drawing
 
-def create_bar_chart(data, labels, title, filename, x_label="", y_label=""):
-    """Create a bar chart and save as image"""
-    drawing = Drawing(400, 300)
-    bc = VerticalBarChart()
-    bc.x = 50
-    bc.y = 50
-    bc.height = 200
-    bc.width = 300
-    bc.data = [data]
-    bc.categoryAxis.categoryNames = labels
-    bc.valueAxis.valueMin = 0
-    bc.valueAxis.valueMax = max(data) * 1.2 if data else 10
-    bc.bars[0].fillColor = colors.HexColor('#4ECDC4')
-    bc.categoryAxis.labels.angle = 45
-    bc.categoryAxis.labels.fontSize = 8
-    
-    drawing.add(bc)
-    drawing.save(formats=['png'], outDir='.', fnRoot=filename)
-    return f"{filename}.png"
+# Prepare chart data (will be added to PDF later)
+status_chart_data = None
+type_chart_data = None
 
-# Create overall status pie chart
 if open_count + closed_count > 0:
-    status_chart = create_pie_chart(
-        [open_count, closed_count],
-        ['Open', 'Closed'],
-        'Issue Status',
-        'status_chart'
-    )
-else:
-    status_chart = None
+    status_chart_data = ([open_count, closed_count], ['Open', 'Closed'], 'Issue Status')
 
-# Create issue type pie chart
 if bug_count + enhancement_count + other_count > 0:
-    type_chart = create_pie_chart(
-        [bug_count, enhancement_count, other_count],
-        ['Bugs', 'Enhancements', 'Other'],
-        'Issue Types',
-        'type_chart'
-    )
-else:
-    type_chart = None
+    type_chart_data = ([bug_count, enhancement_count, other_count], ['Bugs', 'Enhancements', 'Other'], 'Issue Types')
 
 # -----------------------
 # Generate PDF
@@ -299,22 +266,22 @@ story.append(summary_table)
 story.append(Spacer(1, 0.3 * inch))
 
 # Charts Section
-if status_chart or type_chart:
+if status_chart_data or type_chart_data:
     charts_heading = Paragraph("Visual Overview", heading_style)
     story.append(charts_heading)
     
-    if status_chart:
+    if status_chart_data:
         story.append(Paragraph("<b>Issue Status Distribution</b>", styles['Normal']))
         story.append(Spacer(1, 0.1 * inch))
-        status_img = Image(status_chart, width=4*inch, height=2*inch)
-        story.append(status_img)
+        status_drawing = create_pie_chart_drawing(status_chart_data[0], status_chart_data[1], status_chart_data[2])
+        story.append(status_drawing)
         story.append(Spacer(1, 0.2 * inch))
     
-    if type_chart:
+    if type_chart_data:
         story.append(Paragraph("<b>Issue Type Distribution</b>", styles['Normal']))
         story.append(Spacer(1, 0.1 * inch))
-        type_img = Image(type_chart, width=4*inch, height=2*inch)
-        story.append(type_img)
+        type_drawing = create_pie_chart_drawing(type_chart_data[0], type_chart_data[1], type_chart_data[2])
+        story.append(type_drawing)
         story.append(Spacer(1, 0.3 * inch))
 
 # Contributor Statistics Section
@@ -409,12 +376,6 @@ else:
 
 # Build PDF
 doc.build(story)
-
-# Clean up chart images
-if status_chart and os.path.exists(status_chart):
-    os.remove(status_chart)
-if type_chart and os.path.exists(type_chart):
-    os.remove(type_chart)
 
 print(f"✓ PDF report generated: {pdf_file}")
 print(f"✓ Total issues: {total_issues}")
