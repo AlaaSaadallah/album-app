@@ -1,0 +1,37 @@
+name: Daily Issues Report (PDF)
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_date:
+        description: 'Report date (YYYY-MM-DD)'
+        required: false
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests reportlab
+
+      - name: Generate PDF report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/generate_report.py
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-issues-report
+          path: daily_issues_report.pdf
