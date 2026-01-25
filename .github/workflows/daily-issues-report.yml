@@ -5,6 +5,17 @@ on:
     # Run daily at 9 AM UTC (adjust as needed)
     - cron: '0 9 * * *'
   workflow_dispatch: # Allow manual triggering
+    inputs:
+      from_date:
+        description: 'Start date (YYYY-MM-DD). Leave empty for yesterday.'
+        required: false
+        type: string
+        default: ''
+      to_date:
+        description: 'End date (YYYY-MM-DD). Leave empty for today.'
+        required: false
+        type: string
+        default: ''
 
 jobs:
   generate-report:
@@ -28,19 +39,36 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests reportlab
       
+      - name: Set date range
+        id: dates
+        run: |
+          if [ -n "${{ inputs.from_date }}" ]; then
+            echo "from_date=${{ inputs.from_date }}" >> $GITHUB_OUTPUT
+          else
+            echo "from_date=$(date -d 'yesterday' +%Y-%m-%d)" >> $GITHUB_OUTPUT
+          fi
+          
+          if [ -n "${{ inputs.to_date }}" ]; then
+            echo "to_date=${{ inputs.to_date }}" >> $GITHUB_OUTPUT
+          else
+            echo "to_date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+          fi
+      
       - name: Generate report
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python generate_issues_report.py \
+          python scripts/generate_report.py \
             --owner ${{ github.repository_owner }} \
-            --repo ${{ github.event.repository.name }}
+            --repo ${{ github.event.repository.name }} \
+            --from-date ${{ steps.dates.outputs.from_date }} \
+            --to-date ${{ steps.dates.outputs.to_date }}
       
       - name: Upload report as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: issues-report-${{ github.run_number }}
-          path: daily_issues_report_*.pdf
+          name: issues-report-${{ steps.dates.outputs.from_date }}-to-${{ steps.dates.outputs.to_date }}
+          path: issues_report_*.pdf
           retention-days: 90
       
       - name: Commit report to repository (optional)
@@ -52,10 +80,10 @@ jobs:
           mkdir -p reports
           
           # Move the report to reports directory
-          mv daily_issues_report_*.pdf reports/
+          mv issues_report_*.pdf reports/
           
           # Add and commit
           git add reports/
-          git diff --quiet && git diff --staged --quiet || git commit -m "Add daily issues report for $(date +%Y-%m-%d)"
+          git diff --quiet && git diff --staged --quiet || git commit -m "📊 Issues report from ${{ steps.dates.outputs.from_date }} to ${{ steps.dates.outputs.to_date }}"
           git push
         continue-on-error: true
