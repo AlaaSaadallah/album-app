@@ -1,43 +1,80 @@
-name: Daily Issues Report (PDF)
+#!/usr/bin/env python3
+import os
+import sys
+import argparse
+import requests
+from datetime import datetime
+from reportlab.lib.pagesizes import LETTER
+from reportlab.pdfgen import canvas
 
-on:
-  workflow_dispatch:
-    inputs:
-      report_date:
-        description: 'Report date (YYYY-MM-DD)'
-        required: false
+# -----------------------
+# Parse optional arguments
+# -----------------------
+parser = argparse.ArgumentParser(description="Generate Daily Issues Report PDF")
+parser.add_argument(
+    "--report-date",
+    type=str,
+    help="Report date in YYYY-MM-DD format (default: today)",
+)
+args = parser.parse_args()
 
-jobs:
-  generate-report:
-    runs-on: ubuntu-latest
+report_date = args.report_date or datetime.today().strftime("%Y-%m-%d")
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+# -----------------------
+# GitHub API setup
+# -----------------------
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+if not GITHUB_TOKEN:
+    print("Error: GITHUB_TOKEN environment variable is not set")
+    sys.exit(1)
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+# Replace with your repo info
+OWNER = "your-org-or-username"
+REPO = "your-repo-name"
 
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install requests reportlab
+headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+issues_url = f"https://api.github.com/repos/{OWNER}/{REPO}/issues?state=open"
 
-      - name: Generate PDF report
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Pass report_date input to the script if provided
-          if [ -n "${{ github.event.inputs.report_date }}" ]; then
-            python scripts/generate_report.py --report-date "${{ github.event.inputs.report_date }}"
-          else
-            python scripts/generate_report.py
-          fi
+# -----------------------
+# Fetch issues
+# -----------------------
+try:
+    response = requests.get(issues_url, headers=headers)
+    response.raise_for_status()
+    issues = response.json()
+except Exception as e:
+    print(f"Error fetching issues from GitHub: {e}")
+    sys.exit(1)
 
-      - name: Upload PDF
-        uses: actions/upload-artifact@v4
-        with:
-          name: daily-issues-report
-          path: daily_issues_report.pdf
+# -----------------------
+# Generate PDF
+# -----------------------
+pdf_file = "daily_issues_report.pdf"
+c = canvas.Canvas(pdf_file, pagesize=LETTER)
+width, height = LETTER
+y = height - 50
+
+c.setFont("Helvetica-Bold", 16)
+c.drawString(50, y, f"Daily Issues Report - {report_date}")
+y -= 40
+c.setFont("Helvetica", 12)
+
+if not issues:
+    c.drawString(50, y, "No issues found.")
+else:
+    for issue in issues:
+        if y < 50:  # new page
+            c.showPage()
+            c.setFont("Helvetica", 12)
+            y = height - 50
+
+        # Safely get assignee login
+        assignee = issue.get("assignee")
+        assignee_login = assignee["login"] if assignee else "Unassigned"
+
+        text = f"- [{issue['state']}] {issue['title']} (Assignee: {assignee_login})"
+        c.drawString(50, y, text)
+        y -= 20
+
+c.save()
+print(f"PDF report generated: {pdf_file}")
