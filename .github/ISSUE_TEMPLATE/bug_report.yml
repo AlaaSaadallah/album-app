@@ -1,0 +1,94 @@
+name: 🐞 Bug Report
+description: Report a bug
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: input
+    id: bug_id
+    attributes:
+      label: Bug ID (from Excel)
+      placeholder: "1"
+    validations:
+      required: false
+
+  - type: input
+    id: title
+    attributes:
+      label: Title
+      placeholder: "Unable to close Edit Employee page"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: "The Edit Employee page layout is too large..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Open the Admin Dashboard
+        2. Navigate to the Employee section
+        3. Click on Edit
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Result
+      placeholder: "The Edit Employee page should fit within the screen..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Result
+      placeholder: "The page is oversized and scrolling is not available..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Low
+        - Medium
+        - High
+        - Critical
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: "https://learning.web..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: test_data
+    attributes:
+      label: Test Data
+      placeholder: "Any existing employee record / Phone number..."
+    validations:
+      required: false
