@@ -1,0 +1,125 @@
+name: Daily Issues Report with Notifications
+
+on:
+  schedule:
+    # Run daily at 9 AM UTC (adjust as needed)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  generate-and-notify:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      issues: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests reportlab
+      
+      - name: Generate report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python generate_issues_report.py \
+            --owner ${{ github.repository_owner }} \
+            --repo ${{ github.event.repository.name }}
+      
+      - name: Get report filename
+        id: report
+        run: |
+          REPORT_FILE=$(ls daily_issues_report_*.pdf)
+          echo "filename=$REPORT_FILE" >> $GITHUB_OUTPUT
+          echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+      
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: issues-report-${{ steps.report.outputs.date }}
+          path: ${{ steps.report.outputs.filename }}
+          retention-days: 90
+      
+      # Option 1: Send via email (requires email action setup)
+      - name: Send email with report
+        uses: dawidd6/action-send-mail@v3
+        if: false # Set to true to enable email notifications
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: Daily Issues Report - ${{ steps.report.outputs.date }}
+          to: team@example.com
+          from: GitHub Actions
+          body: |
+            Daily issues report for ${{ github.repository }} has been generated.
+            
+            Report date: ${{ steps.report.outputs.date }}
+            
+            The PDF report is attached to this email.
+          attachments: ${{ steps.report.outputs.filename }}
+      
+      # Option 2: Upload to Slack
+      - name: Upload to Slack
+        if: false # Set to true to enable Slack upload
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        run: |
+          curl -F file=@${{ steps.report.outputs.filename }} \
+               -F "initial_comment=Daily Issues Report - ${{ steps.report.outputs.date }}" \
+               -F channels=C1234567890 \
+               -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+               https://slack.com/api/files.upload
+      
+      # Option 3: Create GitHub Release with the report
+      - name: Create Release with Report
+        if: false # Set to true to enable releases
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: report-${{ steps.report.outputs.date }}
+          name: Issues Report - ${{ steps.report.outputs.date }}
+          body: |
+            Automated daily issues report
+            Generated: ${{ steps.report.outputs.date }}
+          files: ${{ steps.report.outputs.filename }}
+          draft: false
+          prerelease: false
+      
+      # Option 4: Commit to repository
+      - name: Commit report to repository
+        if: true # Set to false to disable committing
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Create reports directory if it doesn't exist
+          mkdir -p reports
+          
+          # Move the report to reports directory
+          mv ${{ steps.report.outputs.filename }} reports/
+          
+          # Add and commit
+          git add reports/
+          git diff --quiet && git diff --staged --quiet || git commit -m "📊 Daily issues report - ${{ steps.report.outputs.date }}"
+          git push
+        continue-on-error: true
+      
+      # Option 5: Upload to Google Drive (requires rclone setup)
+      - name: Upload to Google Drive
+        if: false # Set to true to enable Google Drive upload
+        run: |
+          # Setup rclone with your Google Drive config
+          # This requires RCLONE_CONFIG secret to be set
+          echo "${{ secrets.RCLONE_CONFIG }}" > rclone.conf
+          rclone copy ${{ steps.report.outputs.filename }} gdrive:reports/ --config=rclone.conf
