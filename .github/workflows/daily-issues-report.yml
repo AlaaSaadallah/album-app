@@ -22,13 +22,19 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pip install --upgrade pip
           pip install requests reportlab
 
       - name: Generate PDF report
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python scripts/generate_report.py
+          # Pass report_date input to the script if provided
+          if [ -n "${{ github.event.inputs.report_date }}" ]; then
+            python scripts/generate_report.py --report-date "${{ github.event.inputs.report_date }}"
+          else
+            python scripts/generate_report.py
+          fi
 
       - name: Upload PDF
         uses: actions/upload-artifact@v4
