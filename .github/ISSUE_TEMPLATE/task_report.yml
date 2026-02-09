@@ -11,7 +11,7 @@ body:
     validations:
       required: false
 
-  - type: input
+  # - type: input
     # id: title
     # attributes:
     #   label: Title
