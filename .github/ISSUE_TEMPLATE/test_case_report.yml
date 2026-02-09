@@ -1,12 +1,12 @@
-name: Story report
-description: Report a story
-title: "📘"
-labels: ["story"]
+name: Test case report
+description: Report a test case
+title: "💡"
+labels: ["test case"]
 body:
   - type: input
-    id: story_id
+    id: test_case_id
     attributes:
-      label: story ID (from Excel)
+      label: Test Case ID (from Excel)
       placeholder: "1"
     validations:
       required: false

@@ -1,12 +1,12 @@
-name: Story report
-description: Report a story
-title: "📘"
-labels: ["story"]
+name: Task report
+description: Report a task
+title: "☑️"
+labels: ["task"]
 body:
   - type: input
-    id: story_id
+    id: task_id
     attributes:
-      label: story ID (from Excel)
+      label: Task ID (from Excel)
       placeholder: "1"
     validations:
       required: false
@@ -54,29 +54,29 @@ body:
   #   validations:
   #     required: true
 
-  # - type: dropdown
-  #   id: severity
-  #   attributes:
-  #     label: Severity
-  #     options:
-  #       - Low
-  #       - Medium
-  #       - High
-  #       - Critical
-  #   validations:
-  #     required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Low
+        - Medium
+        - High
+        - Critical
+    validations:
+      required: false
 
-  # - type: dropdown
-  #   id: priority
-  #   attributes:
-  #     label: Priority
-  #     options:
-  #       - Low
-  #       - Medium
-  #       - High
-  #       - Critical
-  #   validations:
-  #     required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Low
+        - Medium
+        - High
+        - Critical
+    validations:
+      required: false
 
   # - type: input
   #   id: environment
