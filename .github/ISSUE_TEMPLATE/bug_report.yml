@@ -1,7 +1,7 @@
 name: 🐞 Bug Report
 description: Report a bug
-title: "[BUG] "
-labels: ["bug"]
+# title: "[BUG] "
+# labels: ["bug"]
 body:
   - type: input
     id: bug_id
@@ -27,32 +27,32 @@ body:
     validations:
       required: true
 
-  - type: textarea
-    id: steps
-    attributes:
-      label: Steps to Reproduce
-      placeholder: |
-        1. Open the Admin Dashboard
-        2. Navigate to the Employee section
-        3. Click on Edit
-    validations:
-      required: true
+  # - type: textarea
+  #   id: steps
+  #   attributes:
+  #     label: Steps to Reproduce
+  #     placeholder: |
+  #       1. Open the Admin Dashboard
+  #       2. Navigate to the Employee section
+  #       3. Click on Edit
+  #   validations:
+  #     required: true
 
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected Result
-      placeholder: "The Edit Employee page should fit within the screen..."
-    validations:
-      required: true
+  # - type: textarea
+  #   id: expected
+  #   attributes:
+  #     label: Expected Result
+  #     placeholder: "The Edit Employee page should fit within the screen..."
+  #   validations:
+  #     required: true
 
-  - type: textarea
-    id: actual
-    attributes:
-      label: Actual Result
-      placeholder: "The page is oversized and scrolling is not available..."
-    validations:
-      required: true
+  # - type: textarea
+  #   id: actual
+  #   attributes:
+  #     label: Actual Result
+  #     placeholder: "The page is oversized and scrolling is not available..."
+  #   validations:
+  #     required: true
 
   - type: dropdown
     id: severity
@@ -74,6 +74,7 @@ body:
         - Low
         - Medium
         - High
+        - Critical
     validations:
       required: true
 
@@ -85,10 +86,10 @@ body:
     validations:
       required: false
 
-  - type: textarea
-    id: test_data
-    attributes:
-      label: Test Data
-      placeholder: "Any existing employee record / Phone number..."
-    validations:
-      required: false
+  # - type: textarea
+  #   id: test_data
+  #   attributes:
+  #     label: Test Data
+  #     placeholder: "Any existing employee record / Phone number..."
+  #   validations:
+  #     required: false
