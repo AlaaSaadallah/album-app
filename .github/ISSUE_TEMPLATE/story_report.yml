@@ -1,7 +1,7 @@
-name: 🐞 Bug Report
-description: Report a bug
-title: "[BUG] 🐞"
-labels: ["bug"]
+name: 🐞 Story report
+description: Report a story
+title: "[Story] "
+labels: ["story"]
 body:
   - type: input
     id: bug_id
