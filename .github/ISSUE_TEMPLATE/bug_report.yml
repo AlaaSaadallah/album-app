@@ -1,6 +1,6 @@
 name: 🐞 Bug Report
 description: Report a bug
-title: "🐞"
+title: "🐞 [BUG] -"
 labels: ["bug"]
 body:
   - type: input
@@ -11,13 +11,13 @@ body:
     validations:
       required: false
 
-  - type: input
-    id: title
-    attributes:
-      label: Title
-      placeholder: "Unable to close Edit Employee page"
-    validations:
-      required: true
+  # - type: input
+  #   id: title
+  #   attributes:
+  #     label: Title
+  #     placeholder: "Unable to close Edit Employee page"
+  #   validations:
+  #     required: true
 
   - type: textarea
     id: description

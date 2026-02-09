@@ -1,6 +1,6 @@
 name: Test case report
 description: Report a test case
-title: "💡"
+title: "💡 [TEST CASE] -"
 labels: ["test case"]
 body:
   - type: input
@@ -11,13 +11,13 @@ body:
     validations:
       required: false
 
-  - type: input
-    id: title
-    attributes:
-      label: Title
-      placeholder: "Unable to close Edit Employee page"
-    validations:
-      required: true
+  # - type: input
+  #   id: title
+  #   attributes:
+  #     label: Title
+  #     placeholder: "Unable to close Edit Employee page"
+  #   validations:
+  #     required: true
 
   - type: textarea
     id: description

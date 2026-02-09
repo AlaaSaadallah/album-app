@@ -1,6 +1,6 @@
 name: Task report
 description: Report a task
-title: "☑️"
+title: "☑️ [TASK] - "
 labels: ["task"]
 body:
   - type: input
@@ -12,12 +12,12 @@ body:
       required: false
 
   - type: input
-    id: title
-    attributes:
-      label: Title
-      placeholder: "Unable to close Edit Employee page"
-    validations:
-      required: true
+    # id: title
+    # attributes:
+    #   label: Title
+    #   placeholder: "Unable to close Edit Employee page"
+    # validations:
+    #   required: true
 
   - type: textarea
     id: description
